@@ -31,6 +31,8 @@ bind -n M-down select-pane -D
 
 # enable vi mode keys
 set-window-option -g mode-keys vi
+bind-key -T copy-mode-vi 'v' send -X begin-selection
+bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
 
 # set default terminal mode to 256 colors and pass vim colors
 set -g default-terminal "screen-256color"
