@@ -10,10 +10,11 @@ Plug 'junegunn/fzf.vim'
 " Initialize plugin system
 call plug#end()
 
+" Change colorsheme
 colorscheme gruvbox
 set background=dark
 
-" start COC remaps
+" start COC
 " Use tab for trigger completion with characters ahead and navigate.
 " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
 " other plugin before putting this into your config.
@@ -33,7 +34,7 @@ endfunction
 
 nmap <leader>gd <Plug>(coc-definition)
 nmap <leader>gr <Plug>(coc-references)
-" end COC remaps
+" end COC
 
 " Start fzf
 nnoremap  <C-p> :GFiles<CR>

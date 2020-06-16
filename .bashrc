@@ -1,2 +1,2 @@
-source ~/.config/homemade/.bashrc-base
-source ~/.config/homemade/.bashrc-pyenv
+source ~/.config/homemadeconfig/.bashrc-base
+source ~/.config/homemadeconfig/.bashrc-pyenv

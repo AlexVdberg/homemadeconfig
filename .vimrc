@@ -1,2 +1,2 @@
-source ~/.config/homemade/.vimrc-base
-source ~/.config/homemade/.vimrc-plugins
+source ~/.config/homemadeconfig/.vimrc-base
+source ~/.config/homemadeconfig/.vimrc-plugins
