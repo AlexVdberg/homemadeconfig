@@ -1,0 +1,4 @@
+# Setup Pyenv
+export PATH="/home/alex/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
