@@ -34,6 +34,9 @@ endfunction
 
 nmap <leader>gd <Plug>(coc-definition)
 nmap <leader>gr <Plug>(coc-references)
+
+" COC doesnt like older versions of vim
+"let g:coc_disable_startup_warning = 1
 " end COC
 
 " Start fzf
