@@ -1,0 +1,10 @@
+# Aliases are not expanded when shell is not interacive unless expand_aliases is set
+shopt -s expand_aliases
+
+alias cp="cp -i"                          # confirm before overwriting something
+alias df='df -h'                          # human-readable sizes
+alias free='free -m'                      # show sizes in MB
+alias np='nano -w PKGBUILD'
+alias more=less
+
+alias gossh='ssh-add ~/.ssh/id_rsa'
