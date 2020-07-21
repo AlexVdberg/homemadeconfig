@@ -7,4 +7,4 @@ alias free='free -m'                      # show sizes in MB
 alias np='nano -w PKGBUILD'
 alias more=less
 
-alias gossh='ssh-add ~/.ssh/id_rsa'
+alias gossh='ssh-agent bash; ssh-add ~/.ssh/id_rsa'

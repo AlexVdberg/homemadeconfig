@@ -7,6 +7,7 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'tpope/vim-fugitive'
+Plug 'preservim/nerdtree'
 
 " Initialize plugin system
 call plug#end()
@@ -34,8 +35,12 @@ function! s:check_back_space() abort
 endfunction
 
 nmap <leader>gd <Plug>(coc-definition)
+nmap <leader>gy <Plug>(coc-type-definition)
+nmap <leader>gi <Plug>(coc-implementation)
 nmap <leader>gr <Plug>(coc-references)
 
+" Install coc extensions automatically
+let g:coc_global_extensions=['coc-java', 'coc-python', 'coc-clangd']
 " COC doesnt like older versions of vim
 "let g:coc_disable_startup_warning = 1
 " end COC
@@ -43,3 +48,7 @@ nmap <leader>gr <Plug>(coc-references)
 " Start fzf
 nnoremap  <C-p> :GFiles<CR>
 " end fzf
+
+" Start nerdtree
+nmap <leader>n :NERDTreeToggle<CR>
+" end nerdtree
