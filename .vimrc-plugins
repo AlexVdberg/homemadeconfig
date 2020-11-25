@@ -7,7 +7,10 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'tpope/vim-fugitive'
-Plug 'preservim/nerdtree'
+"Plug 'preservim/nerdtree'
+"Plug 'ludovicchabant/vim-gutentags'
+Plug 'dyng/ctrlsf.vim'
+Plug 'wesQ3/vim-windowswap'
 
 " Initialize plugin system
 call plug#end()
@@ -50,5 +53,16 @@ nnoremap  <C-p> :GFiles<CR>
 " end fzf
 
 " Start nerdtree
-nmap <leader>n :NERDTreeToggle<CR>
+"nmap <leader>n :NERDTreeToggle<CR>
 " end nerdtree
+
+" Start ctrlsf
+nmap     <C-F>f <Plug>CtrlSFPrompt
+vmap     <C-F>f <Plug>CtrlSFVwordPath
+vmap     <C-F>F <Plug>CtrlSFVwordExec
+nmap     <C-F>n <Plug>CtrlSFCwordPath
+nmap     <C-F>p <Plug>CtrlSFPwordPath
+nnoremap <C-F>o :CtrlSFOpen<CR>
+nnoremap <C-F>t :CtrlSFToggle<CR>
+inoremap <C-F>t <Esc>:CtrlSFToggle<CR>
+" end ctrlsf
