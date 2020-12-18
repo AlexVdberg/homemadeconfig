@@ -24,3 +24,21 @@ map <silent> <leader>h :noh<CR>
 " change the default register to use the CLIPBOARD buffer in X
 " Requires vim to be complied with +clipboard. I used gvim
 set clipboard=unnamedplus
+
+""
+" Markdown Configuration
+""
+
+let g:markdown_fenced_languages = ['c', 'python']
+
+" Only enable autocommands when VIM supports them
+augroup Markdown
+    autocmd!
+    " Treat all .md files as markdown
+    autocmd BufNewFile,BufRead *.md set filetype=markdown
+    " autocmd FileType markdown set conceallevel=2
+    autocmd FileType markdown setlocal spell spelllang=en_gb
+augroup END
+
+" Always show statusline
+set laststatus=2

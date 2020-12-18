@@ -31,3 +31,6 @@ fi
 # Allow forward searching (ctrl-s)
 # only if the current shell options ($-) includes interactive (*i*)
 [[ $- == *i* ]] && stty -ixon
+
+# Expand variables into directory
+shopt -s direxpand

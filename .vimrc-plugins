@@ -12,6 +12,11 @@ Plug 'tpope/vim-fugitive'
 Plug 'dyng/ctrlsf.vim'
 Plug 'wesQ3/vim-windowswap'
 
+" Markdown things
+"Plug 'godlygeek/tabular'
+"Plug 'plasticboy/vim-markdown'
+
+
 " Initialize plugin system
 call plug#end()
 
@@ -66,3 +71,7 @@ nnoremap <C-F>o :CtrlSFOpen<CR>
 nnoremap <C-F>t :CtrlSFToggle<CR>
 inoremap <C-F>t <Esc>:CtrlSFToggle<CR>
 " end ctrlsf
+
+" Start vim-markdown
+"let g:vim_markdown_strikethrough = 1
+" end vim-markdown
