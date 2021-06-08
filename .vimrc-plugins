@@ -7,16 +7,17 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'tpope/vim-fugitive'
-Plug 'preservim/nerdtree'
 
 " Initialize plugin system
 call plug#end()
 
+""""""""""""" start gruvbox
 " Change colorsheme
 colorscheme gruvbox
 set background=dark
+""""""""""""" end gruvbox
 
-" start COC
+""""""""""""" start COC
 " Use tab for trigger completion with characters ahead and navigate.
 " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
 " other plugin before putting this into your config.
@@ -43,12 +44,8 @@ nmap <leader>gr <Plug>(coc-references)
 let g:coc_global_extensions=['coc-java', 'coc-python', 'coc-clangd']
 " COC doesnt like older versions of vim
 "let g:coc_disable_startup_warning = 1
-" end COC
+""""""""""""" end COC
 
-" Start fzf
+""""""""""""" staet fzf
 nnoremap  <C-p> :GFiles<CR>
-" end fzf
-
-" Start nerdtree
-nmap <leader>n :NERDTreeToggle<CR>
-" end nerdtree
+""""""""""""" end fzf
