@@ -31,6 +31,9 @@ if has("clipboard")
 	set clipboard=unnamedplus
 end
 
+" exclude build folder from searches with wildignore
+set wildignore+=*/build/*
+
 " Functions
 function! StripTrailingWhitespace()
   if !&binary && &filetype != 'diff'
