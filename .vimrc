@@ -1,3 +1,14 @@
+" Colorscheme setup
+" You might have to force true color when using regular vim inside tmux as the
+" colorscheme can appear to be grayscale with "termguicolors" option enabled.
+if !has('gui_running') && &term =~ '^\%(screen\|tmux\)'
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
+
+set termguicolors
+"colorscheme yourfavcolorscheme
+
 " tab character settings
 set tabstop=4 softtabstop=0 shiftwidth=4 smarttab
 "set noexpandtab
@@ -65,10 +76,30 @@ Plug 'tpope/vim-fugitive'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+Plug 'sainnhe/sonokai'
+Plug 'vim-pandoc/vim-pandoc-syntax'
 
 " Initialize plugin system
 call plug#end()
 
+"""""""""""""""""""""
+" vim-pandoc-syntax
+"""""""""""""""""""""
+augroup pandoc_syntax
+    au! BufNewFile,BufFilePre,BufRead *.md set filetype=markdown.pandoc
+augroup END
+let g:pandoc#syntax#conceal#urls = 1
+set conceallevel=2
+set concealcursor=nc "only show concealed text in edit mode
+
+"""""""""""""""""""""
+" Sonokai
+"""""""""""""""""""""
+" The configuration options should be placed before `colorscheme sonokai`.
+	let g:sonokai_style = 'default'
+	let g:sonokai_enable_italic = 1
+	let g:sonokai_disable_italic_comment = 1
+	colorscheme sonokai
 
 """""""""""""""""""""
 " COC
