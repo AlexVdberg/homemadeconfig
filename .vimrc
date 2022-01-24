@@ -1,6 +1,6 @@
 " tab character settings
 set tabstop=4 softtabstop=0 shiftwidth=4 smarttab
-"set expandtab
+"set noexpandtab
 
 " Enable syntax highlighting
 syntax on
