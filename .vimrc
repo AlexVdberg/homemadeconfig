@@ -61,7 +61,12 @@ nnoremap <leader>m :make<cr>
 nnoremap <leader>s :call StripTrailingWhitespace()<cr>
 nnoremap <leader>r :source ~/.vimrc<cr>
 
+" textwidth for markdown files. use gq to auto format
+au BufRead,BufNewFile *.md setlocal textwidth=80
+
+"""""""""""""""""""""
 " Plugins
+"""""""""""""""""""""
 " Install vim-plug automatically
 let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
 if empty(glob(data_dir . '/autoload/plug.vim'))
@@ -96,10 +101,10 @@ set concealcursor=nc "only show concealed text in edit mode
 " Sonokai
 """""""""""""""""""""
 " The configuration options should be placed before `colorscheme sonokai`.
-	let g:sonokai_style = 'default'
-	let g:sonokai_enable_italic = 1
-	let g:sonokai_disable_italic_comment = 1
-	colorscheme sonokai
+let g:sonokai_style = 'default'
+let g:sonokai_enable_italic = 1
+let g:sonokai_disable_italic_comment = 1
+colorscheme sonokai
 
 """""""""""""""""""""
 " COC
