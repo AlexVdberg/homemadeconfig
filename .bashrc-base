@@ -46,7 +46,7 @@ esac
 use_color=false
 
 # Force use_color to true for alacritty
-eval "$(TERM=xterm-256color dircolors --sh ~/.dir_colors)"
+#eval "$(TERM=xterm-256color dircolors --sh ~/.dir_colors)"
 export USER_LS_COLORS="$LS_COLORS"
 use_color=true
 

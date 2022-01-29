@@ -140,3 +140,4 @@ nmap <leader>gr <Plug>(coc-references)
 " FZF
 """""""""""""""""""""
 nnoremap  <C-p> :GFiles<CR>
+nnoremap <leader>p :Files<CR>
