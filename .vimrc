@@ -43,7 +43,7 @@ if has("clipboard")
 end
 
 " exclude build folder from searches with wildignore
-set wildignore+=*/build/*
+"set wildignore+=*/build/*
 
 " Functions
 function! StripTrailingWhitespace()
@@ -60,6 +60,7 @@ endfunction
 nnoremap <leader>m :make<cr>
 nnoremap <leader>s :call StripTrailingWhitespace()<cr>
 nnoremap <leader>r :source ~/.vimrc<cr>
+nnoremap <leader>n ]sz=
 
 " textwidth for markdown files. use gq to auto format
 au BufRead,BufNewFile *.md setlocal textwidth=80
@@ -83,6 +84,7 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'sainnhe/sonokai'
 Plug 'vim-pandoc/vim-pandoc-syntax'
+Plug 'kergoth/vim-bitbake'
 
 " Initialize plugin system
 call plug#end()
@@ -92,6 +94,7 @@ call plug#end()
 """""""""""""""""""""
 augroup pandoc_syntax
     au! BufNewFile,BufFilePre,BufRead *.md set filetype=markdown.pandoc
+    au  BufNewFile,BufFilePre,BufRead *.md set spell
 augroup END
 let g:pandoc#syntax#conceal#urls = 1
 set conceallevel=2
@@ -140,3 +143,13 @@ nmap <leader>gr <Plug>(coc-references)
 " FZF
 """""""""""""""""""""
 nnoremap  <C-p> :GFiles<CR>
+nnoremap  <leader>p :Files<CR>
+command! -bang SourcesFiles call fzf#vim#files('sources', <bang>0)
+nnoremap  <leader>o :SourcesFiles<CR>
+command! -bang WorkFiles call fzf#vim#files('build/tmp/work/all-ienso-linux', <bang>0)
+nnoremap  <leader>i :WorkFiles<CR>
+command! -bang WorkspaceFiles call fzf#vim#files('build/workspace', <bang>0)
+nnoremap  <leader>u :WorkspaceFiles<CR>
+command! -bang WorkSharedFiles call fzf#vim#files('build/tmp/work-shared/ambarella-sdk', <bang>0)
+nnoremap  <leader>y :WorkSharedFiles<CR>
+
