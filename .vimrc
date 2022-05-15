@@ -57,10 +57,12 @@ function! StripTrailingWhitespace()
 endfunction
 
 " Shortcuts
-nnoremap <leader>m :make<cr>
 nnoremap <leader>s :call StripTrailingWhitespace()<cr>
 nnoremap <leader>r :source ~/.vimrc<cr>
 
+" markdown
+" Set web link
+let g:netrw_http_cmd='firefox'
 " textwidth for markdown files. use gq to auto format
 au BufRead,BufNewFile *.md setlocal textwidth=80
 
@@ -83,6 +85,8 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'sainnhe/sonokai'
 Plug 'vim-pandoc/vim-pandoc-syntax'
+Plug 'alepez/vim-gtest'
+Plug 'ilyachur/cmake4vim'
 
 " Initialize plugin system
 call plug#end()
@@ -141,3 +145,16 @@ nmap <leader>gr <Plug>(coc-references)
 """""""""""""""""""""
 nnoremap  <C-p> :GFiles<CR>
 nnoremap <leader>p :Files<CR>
+
+"""""""""""""""""""""
+" vim-gtest
+"""""""""""""""""""""
+let g:gtest#gtest_command = "cmake-build-Release/test/test"
+nnoremap <leader>g :GTestRun<cr>
+
+"""""""""""""""""""""
+" cmake4vim
+"""""""""""""""""""""
+let g:cmake_build_dir = "build"
+nnoremap <leader>m :CMakeBuild<cr>
+nnoremap <leader>n :CMake<cr>
