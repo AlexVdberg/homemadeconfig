@@ -134,3 +134,6 @@ ex ()
     echo "'$1' is not a valid file"
   fi
 }
+
+# Zettle Notes
+export NOTES_DIR=~/Documents/notes
