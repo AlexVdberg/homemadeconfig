@@ -13,6 +13,11 @@ cp ~/.config/homemadeconfig/10-monitor.conf /etc/X11/xorg.conf.d/
 cp ~/.config/homemadeconfig/.Xresources ~/
 ```
 
+Other setup things
+```
+# Git config editor to vim
+git config --global core.editor "vim"
+```
 
 ```
 # This isn't necessesary with the Moonlander keyboard
