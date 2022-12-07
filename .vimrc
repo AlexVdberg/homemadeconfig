@@ -67,7 +67,7 @@ let g:netrw_http_cmd='firefox'
 au BufRead,BufNewFile *.md setlocal textwidth=80
 
 " Zettle Note Taking
-let g:zettelkasten = "/home/MAGICLEAP/avandenberg/Documents/notes/"
+let g:zettelkasten = "/home/alex/Documents/notes/"
 
 "function! ZettelIndex()
 "	:e zettelkasten . /index.md
