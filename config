@@ -180,5 +180,8 @@ bar {
         status_command i3status
 }
 
+#bindsym $mod+q exec notify-send --urgency=low "hello world"
+bindsym $mod+t exec ~/.config/homemadeconfig/scripts/setpacmd.sh -t
+
 exec nm-applet
 

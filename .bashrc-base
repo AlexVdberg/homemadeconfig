@@ -137,3 +137,6 @@ ex ()
 
 # Zettle Notes
 export NOTES_DIR=~/Documents/notes
+
+# Add scripts to path
+export PATH=$PATH:$HOME/.config/homemadeconfig/scripts
