@@ -17,6 +17,9 @@ Other setup things
 ```
 # Git config editor to vim
 git config --global core.editor "vim"
+
+# Install playerctl for audio pause/play
+sudo pacman -Syu playerctl
 ```
 
 ```
