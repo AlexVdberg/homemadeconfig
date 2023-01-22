@@ -13,6 +13,16 @@ cp ~/.config/homemadeconfig/10-monitor.conf /etc/X11/xorg.conf.d/
 cp ~/.config/homemadeconfig/.Xresources ~/
 ```
 
+Install programs on ubuntu
+```
+sudo apt install gnome-screenshot ddcutil
+```
+
+Install programs on manjaro/arch
+```
+sudo pacman -Syu gnome-screenshot ddcutil
+```
+
 Other setup things
 ```
 # Git config editor to vim
@@ -24,6 +34,7 @@ sudo pacman -Syu playerctl
 
 ```
 # This isn't necessesary with the Moonlander keyboard
+# Swap capslock and ctrl
 ln -s ~/.config/homemadeconfig/.Xmodmap .Xmodmap
 ```
 
