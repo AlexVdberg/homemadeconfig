@@ -16,22 +16,41 @@
 
 # Get current input of middle display
 current=$(ddcutil -d 3 getvcp 60 | sed -n "s/.*(sl=\(.*\))/\1/p")
+machine=$(uname -a)
 
 # Get the other input
 case $current in
 
     # HDMI (Work -> Manjaro)
     0x11)
-        output_right=0x11
-        output_left=0x0f
-        output_middle=0x0f
+		case $machine in
+			*"Ubuntu"*)
+				output_right=0x0f
+				output_left=0x11
+				output_middle=0x0f
+			;;
+			*"Manjaro"*)
+				output_right=0x11
+				output_left=0x0f
+				output_middle=0x0f
+			;;
+		esac
         ;;
 
     # Display port (Manjaro -> Work)
     0x0f)
-        output_right=0x0f
-        output_left=0x11
-        output_middle=0x11
+		case $machine in
+			*"Ubuntu"*)
+				output_right=0x11
+				output_left=0x0f
+				output_middle=0x11
+			;;
+			*"Manjaro"*)
+				output_right=0x0f
+				output_left=0x11
+				output_middle=0x11
+			;;
+		esac
         ;;
 
     *)
