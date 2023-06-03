@@ -189,4 +189,4 @@ bindsym $mod+u exec gnome-screenshot
 #exec nm-applet
 
 # display is down 433 pixels
-#exec --no-startup-id xrandr --output HDMI-0 --pos 0x0 --left-of DP-2 --rotate left --output DP-0 --auto --right-of DP-2 --rotate right --pos 6000x0 --output DP-2 --pos 2160x0
+#exec --no-startup-id xrandr --output HDMI-0 --auto --panning 2160x3840+0+0 --left-of DP-2 --rotate left --output DP-0 --auto --panning 2160x3840+6000+0 --right-of DP-2 --rotate right --output DP-2 --auto --panning 3840x2160+2160+433

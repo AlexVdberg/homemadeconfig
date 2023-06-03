@@ -11,7 +11,8 @@ set termguicolors
 
 " tab character settings
 set tabstop=4 softtabstop=0 shiftwidth=4 smarttab
-"set noexpandtab
+"expand tabs into spaces
+set expandtab
 
 " Enable syntax highlighting
 syntax on
@@ -34,6 +35,8 @@ augroup END
 
 " show statusline always
 set laststatus=2
+" show line and column numbers
+set ruler
 
 " search preferences
 set incsearch
@@ -71,16 +74,14 @@ let g:netrw_http_cmd='firefox'
 " textwidth for markdown files. use gq to auto format
 au BufRead,BufNewFile *.md setlocal textwidth=80
 
+autocmd Filetype markdown setlocal spell
+"au BufRead,BufNewFile *.md setlocal tagfunc=MarkdownTagFunc
+"autocmd Filetype markdown setlocal tagfunc=MarkdownTagFunc
+
 " Zettle Note Taking
-let g:zettelkasten = "/home/alex/Documents/notes/"
+let g:zettelkasten = "~/Documents/notes/"
 
-"function! ZettelIndex()
-"	:e zettelkasten . /index.md
-"	:cd zettelkasten
-"endfunction
-"nnoremap <leader>ni :call ZettleIndex()<CR>
-
-command! ZettleIndex :execute ":e " fnameescape(zettelkasten) . "index.md" | :execute ":tcd " . fnameescape(zettelkasten)
+command! ZettleIndex :execute ":e " fnameescape(zettelkasten) . "0.md" | :execute ":tcd " . fnameescape(zettelkasten)
 nnoremap <leader>ni :ZettleIndex<CR>
 command! -nargs=1 ZettleNew :execute ":e" zettelkasten . strftime("%Y%m%d%H%M") . "-<args>.md"
 nnoremap <leader>nn :ZettleNew 
@@ -89,143 +90,9 @@ nnoremap <leader>nn :ZettleNew
 nmap <leader>cs :let @+ = expand("%:t")<CR>
 nmap <leader>cl :let @+ = expand("%")<CR> 
 
-" set backspace type
+" set backspace type (backspace around line wraps)
 set backspace=2
 
-"parameters:
-"
-" - step +1 for right, -1 for left
-"
-" TODO: multiple lines.
-"
-function! s:FindCornerOfSyntax(lnum, col, step)
-    let l:col = a:col
-    let l:syn = synIDattr(synID(a:lnum, l:col, 1), 'name')
-    while synIDattr(synID(a:lnum, l:col, 1), 'name') ==# l:syn
-        let l:col += a:step
-    endwhile
-    return l:col - a:step
-endfunction
-
-" Return the next position of the given syntax name,
-" inclusive on the given position.
-"
-" TODO: multiple lines
-"
-function! s:FindNextSyntax(lnum, col, name)
-    let l:col = a:col
-    let l:step = 1
-    while synIDattr(synID(a:lnum, l:col, 1), 'name') !=# a:name
-        let l:col += l:step
-    endwhile
-    return [a:lnum, l:col]
-endfunction
-
-function! s:FindCornersOfSyntax(lnum, col)
-    return [<sid>FindLeftOfSyntax(a:lnum, a:col), <sid>FindRightOfSyntax(a:lnum, a:col)]
-endfunction
-
-function! s:FindRightOfSyntax(lnum, col)
-    return <sid>FindCornerOfSyntax(a:lnum, a:col, 1)
-endfunction
-
-function! s:FindLeftOfSyntax(lnum, col)
-    return <sid>FindCornerOfSyntax(a:lnum, a:col, -1)
-endfunction
-
-" Returns:
-"
-" - a string with the the URL for the link under the cursor
-" - an empty string if the cursor is not on a link
-"
-" TODO
-"
-" - multiline support
-" - give an error if the separator does is not on a link
-"
-function! Markdown_GetUrlForPosition(lnum, col)
-    let l:lnum = a:lnum
-    let l:col = a:col
-    let l:syn = synIDattr(synID(l:lnum, l:col, 1), 'name')
-	"echomsg l:syn
-
-    if l:syn ==# 'mkdInlineURL' || l:syn ==# 'mkdURL' || l:syn ==# 'mkdLinkDefTarget' || l:syn ==# 'pandocReferenceURL' || l:syn ==# 'markdownUrl'
-        " Do nothing.
-    elseif l:syn ==# 'markdownLinkText'
-        let [l:lnum, l:col] = <sid>FindNextSyntax(l:lnum, l:col, 'markdownUrl')
-        let l:syn = 'markdownUrl'
-    elseif l:syn ==# 'markdownLinkTextDelimiter'
-        let l:line = getline(l:lnum)
-        let l:char = l:line[col - 1]
-        if l:char ==# '<'
-            let l:col += 1
-        elseif l:char ==# '>' || l:char ==# ')'
-            let l:col -= 1
-        elseif l:char ==# '[' || l:char ==# ']' || l:char ==# '('
-            let [l:lnum, l:col] = <sid>FindNextSyntax(l:lnum, l:col, 'markdownUrl')
-        else
-            return ''
-        endif
-    elseif l:syn ==# 'pandocReferenceLabel'
-        let [l:lnum, l:col] = <sid>FindNextSyntax(l:lnum, l:col, 'pandocReferenceURL')
-        let l:syn = 'pandocReferenceURL'
-    elseif l:syn ==# 'pandocOperator'
-        let l:line = getline(l:lnum)
-        let l:char = l:line[col - 1]
-        if l:char ==# '<'
-            let l:col += 1
-        elseif l:char ==# '>' || l:char ==# ')'
-            let l:col -= 1
-        elseif l:char ==# '[' || l:char ==# ']' || l:char ==# '('
-            let [l:lnum, l:col] = <sid>FindNextSyntax(l:lnum, l:col, 'pandocReferenceURL')
-        else
-            return ''
-        endif
-    elseif l:syn ==# 'mkdLink'
-        let [l:lnum, l:col] = <sid>FindNextSyntax(l:lnum, l:col, 'mkdURL')
-        let l:syn = 'mkdURL'
-    elseif l:syn ==# 'mkdDelimiter'
-        let l:line = getline(l:lnum)
-        let l:char = l:line[col - 1]
-        if l:char ==# '<'
-            let l:col += 1
-        elseif l:char ==# '>' || l:char ==# ')'
-            let l:col -= 1
-        elseif l:char ==# '[' || l:char ==# ']' || l:char ==# '('
-            let [l:lnum, l:col] = <sid>FindNextSyntax(l:lnum, l:col, 'mkdURL')
-        else
-            return ''
-        endif
-    else
-        return ''
-    endif
-
-    let [l:left, l:right] = <sid>FindCornersOfSyntax(l:lnum, l:col)
-    return getline(l:lnum)[l:left - 1 : l:right - 1]
-endfunction
-
-function! s:VersionAwareNetrwBrowseX(url)
-    if has('patch-7.4.567')
-        call netrw#BrowseX(a:url, 0)
-    else
-        call netrw#NetrwBrowseX(a:url, 0)
-    endif
-endf
-
-" Front end for GetUrlForPosition.
-"
-function! OpenUrlUnderCursor()
-    let l:url = Markdown_GetUrlForPosition(line('.'), col('.'))
-	"echomsg l:url
-    if l:url !=# ''
-		execute "e " . l:url
-"        echomsg s:VersionAwareNetrwBrowseX(l:url)
-    else
-        echomsg 'The cursor is not on a link.'
-    endif
-endfunction
-
-nnoremap <leader>u :call OpenUrlUnderCursor()<CR>
 
 
 """""""""""""""""""""
@@ -249,6 +116,8 @@ Plug 'sainnhe/sonokai'
 Plug 'vim-pandoc/vim-pandoc-syntax', {'on': []}
 Plug 'alepez/vim-gtest'
 Plug 'ilyachur/cmake4vim'
+Plug '~/dev/vim_z'
+Plug 'christoomey/vim-tmux-navigator'
 "Plug 'preservim/vim-markdown'
 
 " Initialize plugin system
@@ -302,11 +171,11 @@ nmap <leader>gr <Plug>(coc-references)
 set tagfunc=CocTagFunc
 
 """""""""""""""""""""
-" FZF
+" fzf
 """""""""""""""""""""
 nnoremap  <C-p> :GFiles<CR>
 nnoremap <leader>p :Files<CR>
-nnoremap <leader>r :Rg <CR>
+"nnoremap <leader>r :Rg <CR>
 
 """""""""""""""""""""
 " vim-gtest
@@ -320,3 +189,18 @@ nnoremap <leader>g :GTestRun<cr>
 let g:cmake_build_dir = "build"
 nnoremap <leader>m :CMakeBuild<cr>
 nnoremap <leader>n :CMake<cr>
+
+
+"""""""""""""""""""""
+" vim-tmux-navigator
+"""""""""""""""""""""
+let g:tmux_navigator_no_mappings = 1
+
+"noremap <silent> <A-h> :<C-U>TmuxNavigateLeft<cr>
+"noremap <silent> <A-j> :<C-U>TmuxNavigateDown<cr>
+"noremap <silent> <A-k> :<C-U>TmuxNavigateUp<cr>
+"noremap <silent> <A-l> :<C-U>TmuxNavigateRight<cr>
+"noremap <silent> <A-;> :<C-U>TmuxNavigatePrevious<cr>
+nnoremap <leader> k :echo 'hello'<cr>
+nnoremap <M-j> :echo 'hello'<cr>
+nnoremap <A-k> :wincmd k<CR>
