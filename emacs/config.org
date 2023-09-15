@@ -19,7 +19,18 @@
 #+end_src
 
 * Core Setup
+** Line Numbering
+Use hybrid relative mode. This means the current line is absolute, but all others are relative.
+
+#+begin_src emacs-lisp
+    (setq-default display-line-numbers 'visual
+	display-line-numbers-width-start t
+	display-line-numbers-current-absolute nil)
+#+end_src
+
 ** Line Wraping
+*** Visual Fill Column
+Wraps lines at fill-column
 #+begin_src emacs-lisp
   ;;(add-hook 'text-mode-hook #'auto-fill-mode)
 
@@ -30,51 +41,54 @@
     (setq-default fill-column 80)
     (setq org-tags-column -80)
     :ensure t)
+#+end_src
 
+Fix line number shifting column.
+See https://codeberg.org/joostkremers/visual-fill-column/issues/1
+#+begin_src emacs-lisp
+    (eval-after-load 'visual-fill-column
+      `(defun visual-fill-column--set-margins (window)
+      "Set window margins for WINDOW."
+      ;; Calculate left & right margins.
+      (let* ((total-width (window-max-chars-per-line))
+	     (width (or visual-fill-column-width
+			fill-column))
+	     (margins (if (< (- total-width width) 0) ; margins must be >= 0
+			  0
+			(- total-width width)))
+	     (left (if visual-fill-column-center-text
+		       (/ margins 2)
+		     0))
+	     (right (- margins left)))
+  
+	(if visual-fill-column-extra-text-width
+	    (let ((add-width (visual-fill-column--add-extra-width left right visual-fill-column-extra-text-width)))
+	      (setq left (car add-width)
+		    right (cdr add-width))))
+  
+	;; put an explicitly R2L buffer on the right side of the window
+	(when (and (eq bidi-paragraph-direction 'right-to-left)
+		   (= left 0))
+	  (setq left right)
+	  (setq right 0))
+  
+	(set-window-margins window left right)))
+    )
+#+end_src
+
+An alternative solution might be found [[https://debbugs.gnu.org/cgi/bugreport.cgi?bug=28246][in this bug report]]. This causes it to read the max line number and set it to that.
+This [[https://www.reddit.com/r/emacs/comments/8pfdlb/weird_shifting_problem_with_new_emacs_line_numbers/][bug was reported]] but nothing helpful came from it. They just pointed to the ~display-line-numbers-width-start~ and ~display-line-numbers-grow-only~ options.
+
+*** Adaptive Wrap
+Visually wrap bullet point lines without changing the text.
+This might need to be defined after visual fill column. Might be a good idea to force this. Could probably add it to the ~eval-after-load~ block.
+There may be a better place for me to enable adaptive-wrap-prefix-mode.
+#+begin_src emacs-lisp
   (use-package adaptive-wrap
     :ensure t)
-  
-  ;; Fix line number shifting column
-  ;; see https://codeberg.org/joostkremers/visual-fill-column/issues/1
-  (eval-after-load 'visual-fill-column
-    `(defun visual-fill-column--set-margins (window)
-    "Set window margins for WINDOW."
-    ;; Calculate left & right margins.
-    (let* ((total-width (window-max-chars-per-line))
-           (width (or visual-fill-column-width
-                      fill-column))
-           (margins (if (< (- total-width width) 0) ; margins must be >= 0
-                        0
-                      (- total-width width)))
-           (left (if visual-fill-column-center-text
-                     (/ margins 2)
-                   0))
-           (right (- margins left)))
-  
-      (if visual-fill-column-extra-text-width
-          (let ((add-width (visual-fill-column--add-extra-width left right visual-fill-column-extra-text-width)))
-            (setq left (car add-width)
-                  right (cdr add-width))))
-  
-      ;; put an explicitly R2L buffer on the right side of the window
-      (when (and (eq bidi-paragraph-direction 'right-to-left)
-                 (= left 0))
-        (setq left right)
-        (setq right 0))
-  
-      (set-window-margins window left right))))
-
+  (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 #+end_src
-
-** Line Numbering
-Use hybrid relative mode. This means the current line is absolute, but all others are relative.
-
-#+begin_src emacs-lisp
-  (setq-default display-line-numbers 'visual
-        display-line-numbers-current-absolute t)
-  (setq display-line-numbers-width-start t)
-#+end_src
-
+  
 ** Window Managment
 #+begin_src emacs-lisp
   (use-package window
@@ -133,6 +147,13 @@ Remove the toolbar.
   (tool-bar-mode -1)
 #+end_src
 
+** Mode Line
+Show the line and column number.
+#+begin_src emacs-lisp
+  (setq column-number-mode t)
+  (setq line-number-mode t)
+#+end_src
+
 * Theme and Visuals
 ** Install themes
 #+begin_src emacs-lisp
@@ -143,6 +164,21 @@ Remove the toolbar.
 ** Prefered theme
 #+begin_src emacs-lisp
   (load-theme 'doom-nord t)
+#+end_src
+
+** COMMENT Font
+#+begin_src emacs-lisp
+    (require 'cl-lib)
+  (require 'cl-extra)
+  (let ((str "The quick brown fox jumps over the lazy dog ´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
+	(font-families (cl-remove-duplicates 
+			(sort (font-family-list) 
+			      (lambda(x y) (string< (upcase x) (upcase y))))
+			:test 'cl-equalp)))
+    (dolist (ff font-families)
+      (insert 
+       (propertize str 'font-lock-face `(:family ,ff))               ff "\n"
+       (propertize str 'font-lock-face `(:family ,ff :slant italic)) ff "\n"))
 #+end_src
 
 * Evil Mode
@@ -192,62 +228,27 @@ This provides extra functionality to org agenda
       ;; find out what meta means)
       :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
       :preface
-  )
+      (defun vulpea-agenda-category (&optional len)
+	"Get category of item at point for agenda.
 
+      Category is defined by one of the following items:
 
-#+end_src
+      - CATEGORY property
+      - TITLE keyword
+      - TITLE property
+      - filename without directory and extension
 
-* Org
-#+begin_src emacs-lisp
-  (use-package org
-    :after (vulpea)
-    :config
-    (setq org-todo-keywords
-	`((sequence "TODO(t)" "WAITING(w)" "NEXT(n)"
-		    "|" "DONE(d)" "STALE(s)")
-	  (sequence "ACTIVE(a)" "|" "COMPLETE(C)")
-	  (sequence "BACKLOG(b)" "MAYBE(m)" "|" "CANCLED(c)")))
+      When LEN is a number, resulting string is padded right with
+      spaces and then truncated with ... on the right if result is
+      longer than LEN.
 
-    ;; (setq alex/org-agenda-directory "~/org-roam/")
-    (setq org-capture-templates
-	  `(("i" "inbox" entry (file ,(concat org-roam-directory "20230718140641-inbox.org"))
-	     "* TODO %?")))
+      Usage example:
 
-    (setq org-agenda-files (list org-roam-directory))
-    (setq org-agenda-prefix-format '(
-      ;; (agenda  . " %i %-12:c%?-12t% s") ;; file name + org-agenda-entry-type
-      (agenda  . " %i • %?-12t% s")
-      ;; (agenda  . "  • ")
-      (timeline  . "  % s")
-      (todo  . " %i %-12:c")
-      (tags  . " %i %-12:c")
-      (search . " %i %-12:c")))
-    (define-key minibuffer-local-completion-map (kbd "SPC") 'self-insert-command)
-    )
-#+end_src
-
-#+begin_src emacs-lisp
-    (defun vulpea-agenda-category (&optional len)
-      "Get category of item at point for agenda.
-
-    Category is defined by one of the following items:
-
-    - CATEGORY property
-    - TITLE keyword
-    - TITLE property
-    - filename without directory and extension
-
-    When LEN is a number, resulting string is padded right with
-    spaces and then truncated with ... on the right if result is
-    longer than LEN.
-
-    Usage example:
-
-      (setq org-agenda-prefix-format
+	(setq org-agenda-prefix-format
 	  '((agenda . \" %(vulpea-agenda-category) %?-12t %12s\")))
 
-    Refer to `org-agenda-prefix-format' for more information."
-      (let* ((file-name (when buffer-file-name
+      Refer to `org-agenda-prefix-format' for more information."
+	(let* ((file-name (when buffer-file-name
 			(file-name-sans-extension
 			 (file-name-nondirectory buffer-file-name))))
 	   (title (vulpea-buffer-prop-get "title"))
@@ -259,29 +260,133 @@ This provides extra functionality to org agenda
 		    title
 		  category)
 		"")))
-      (if (numberp len)
+	(if (numberp len)
 	  (s-truncate len (s-pad-right len " " result))
 	result)))
+      (defun vulpea-agenda-title (&optional len)
+	"Get title of item at point for agenda.
+         Ignore the category.
 
-  (setq org-agenda-custom-commands
-    '(("n" "Agenda and all TODOs"
-       ((agenda "" nil)
+      When LEN is a number, resulting string is padded right with
+      spaces and then truncated with ... on the right if result is
+      longer than LEN.
+
+      Refer to `org-agenda-prefix-format' for more information."
+	(let* ((file-name (when buffer-file-name
+			(file-name-sans-extension
+			 (file-name-nondirectory buffer-file-name))))
+	   (title (vulpea-buffer-prop-get "title"))
+	   (category (org-get-category))
+	   (result
+	    (or (if (and
+		     title
+		     (string-equal category file-name))
+		    title
+		  title)
+		"")))
+	(if (numberp len)
+	  (s-truncate len (s-pad-right len " " result))
+	result)))
+  )
+
+
+#+end_src
+
+* Org
+#+begin_src emacs-lisp
+  (use-package org
+    :after (vulpea)
+    :config
+    (setq org-M-RET-may-split-line nil)
+    (setq org-todo-keywords
+      `((sequence "TODO(t)" "WAITING(w)" "NEXT(n)"
+		  "|" "DONE(d)" "STALE(s)")
+	(sequence "ACTIVE(a)" "|" "COMPLETE(C)")
+	(sequence "BACKLOG(b)" "MAYBE(m)" "|" "CANCLED(c)")))
+
+    (setq org-capture-templates
+    `(("n" "Note" entry (file ,(concat org-roam-directory "inbox.org"))
+       "* %?")
+      ("a" "Acrynm" table-line (file ,(concat org-roam-directory
+       "20230913165015-acrynms.org"))
+       "| %^{Acrynm} | %? |")
+      ("t" "Todo" entry (file ,(concat org-roam-directory "inbox.org"))
+       "* TODO %?")))
+    )
+#+end_src
+
+** Org Agenda
+
+#+begin_src emacs-lisp
+
+  (use-package org-agenda
+    :after (org)
+    :config
+    (setq org-agenda-tags-column -80)
+;;    (setq org-agenda-files (list org-roam-directory))
+;;    (setq org-agenda-files (apply 'append
+;;			      (mapcar
+;;			       (lambda (directory)
+;;				 (directory-files-recursively
+;;				  directory org-agenda-file-regexp))
+;;			       '("~/org-roam/"))))
+  (setq org-agenda-files (append
+                        (directory-files-recursively org-roam-directory org-agenda-file-regexp)))
+    (setq org-agenda-prefix-format '(
+      ;; (agenda  . " %i %-12:c%?-12t% s") ;; file name + org-agenda-entry-type
+      (agenda  . " %i • %?-12t% s")
+      ;; (agenda  . "  • ")
+      (timeline  . "  % s")
+      (todo  . " %i %-12:c")
+      (tags  . " %i %-12:c")
+      (search . " %i %-12:c")))
+    (define-key minibuffer-local-completion-map (kbd "SPC") 'self-insert-command)
+
+    (setq org-agenda-custom-commands
+      '(("n" "Agenda and all TODOs"
+	 ((agenda "" nil)
 	(alltodo "" nil))
-       nil)
+	 nil)
 
-      ("x" "Agenda and next action items"
+	("x" "Agenda and next action items"
 	((agenda "" nil)
-	 (todo "NEXT"
-	   ((org-agenda-overriding-header "Does this work")
-	    (org-agenda-filter-by-tag "+work")
+	 (tags "+@work+TODO=\"NEXT\""
+	   ((org-agenda-overriding-header "@work Next Tasks")
+	    (org-agenda-prefix-format '(
+		  (tags  . " %i %(vulpea-agenda-category 12) ")
+	     )
+	    )
+	   )
+	 )
+	 (tags "+CATEGORY=\"work\"+TODO=\"NEXT\""
+	   ((org-agenda-overriding-header "Work Next Tasks")
+	    (org-agenda-prefix-format '(
+		  (tags  . " %i %(vulpea-agenda-title 12) ")
+	     )
+	    )
+	   )
+	 )
+	 (tags "+@work+TODO=\"WAITING\""
+	   ((org-agenda-overriding-header "@work Waiting Tasks")
+	    (org-agenda-prefix-format '(
+		  (tags  . " %i %(vulpea-agenda-category 12) ")
+	     )
+	    )
+	   )
+	 )
+	 (tags "-@work-someday+TODO=\"NEXT\""
+	   ((org-agenda-overriding-header "Everything Else")
 	    (org-agenda-prefix-format '(
 		  (agenda  . " %i %(vulpea-agenda-category 12)%?-12t% s")
 		  (todo  . " %i %(vulpea-agenda-category 12) ")
 		  (tags  . " %i %(vulpea-agenda-category 12) ")
-		  (search . " %i %(vulpea-agenda-category 12) ")))
-	    ))
-       )
+		  (search . " %i %(vulpea-agenda-category 12) "))
+	    )
+	   )
+	 )
+	)
 	nil nil)))
+    )
 #+end_src
 
 ** Org mode key bindings
@@ -297,23 +402,122 @@ Bindings for following links with mouse and hjkl.
   )
 #+end_src
 
+** Org Babel
+
+Activate babel languages
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+    'org-babel-load-languages
+    '((shell . t)))
+#+end_src
+
 * Org-roam
 #+begin_src emacs-lisp
-  (use-package org-roam
-    :hook
-    (after-init . org-roam-mode)
-    :init
-    :bind (("C-S-M-n i" . org-roam-node-insert)
-  	 ("C-S-M-n f" . org-roam-node-find))
-    :config
-    (org-roam-db-autosync-mode)
-  
-    (setq org-roam-capture-templates
-      '(("d" "default" plain
-         "%?"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)))
-    :ensure t
-    )
+    (use-package org-roam
+      :hook
+      (after-init . org-roam-mode)
+      :init
+      :bind (("C-S-M-n i" . org-roam-node-insert)
+	     ("C-S-M-n f" . org-roam-node-find))
+      :config
+	(org-roam-db-autosync-mode)
+	(setq org-roam-capture-templates
+	  '(("d" "default" plain
+	     "%?"
+	     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+	     :unnarrowed t)
+	    ("j" "Jira" plain
+	     "%?"
+	     :if-new (file+head "work/%<%Y%m%d%H%M%S>-${slug}.org"
+	     "
+  :PROPERTIES:
+  :ROAM_ALIASES: %^{aliases}
+  :CATEGORY: work
+  :END:
+  ,#+TITLE: ${title}
+  "
+	     )
+            )
+	    ("w" "Work" plain
+	     "%?"
+	     :if-new (file+head "work/%<%Y%m%d%H%M%S>-${slug}.org"
+	     "
+  :PROPERTIES:
+  :CATEGORY: work
+  :END:
+  ,#+TITLE: ${title}
+  "
+	     )
+	   )
+	  )
+	)
+      :ensure t
+      )
 #+end_src
+
+* Vertico
+
+VERTical Interative COmpletion. Pops up the mini buffer to show completion posiblities. I would prefer it if it popped up bottom up instead of top down.
+
+Use ~vertico-reverse-mode~ to get bottom up completion. Still need the regular ~vertico-mode~ enabled for it to work.
+
+#+begin_src emacs-lisp
+  (use-package vertico
+    :ensure t
+    :bind (:map vertico-map
+	   ("C-j" . vertico-next)
+	   ("C-k" . vertico-previous)
+	   ("C-f" . vertico-exit)
+	   :map minibuffer-local-map
+	   ("M-h" . backward-kill-word))
+    :custom
+    (vertico-cycle t)
+    :init
+    (vertico-mode)
+    (vertico-reverse-mode))
+
+  (use-package savehist
+    :init
+    (savehist-mode))
+
+  (use-package marginalia
+    :after vertico
+    :ensure t
+    :custom
+    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+    :init
+    (marginalia-mode))
+#+end_src
+
+** NEXT vim ex ":" automatic completion.
+** TODO reverse mode not always shrinking
+
+* Completion
+
+Compleions that work similar to narrowing in vim's fzf buffer. Allows narrowing by partial typing.
+
+#+begin_src emacs-lisp
+(use-package fussy
+  :ensure t
+  :config
+  (push 'fussy completion-styles)
+  (setq
+   ;; For example, project-find-file uses 'project-files which uses
+   ;; substring completion by default. Set to nil to make sure it's using
+   ;; flx.
+   completion-category-defaults nil
+   completion-category-overrides nil))
+#+end_src
+
+** COMMENT Hotfuzz
+A better scoring algorithm? Appears to break the narrowing style that I prefer.
+I will have to test more.
+
+#+begin_src emacs-lisp
+(use-package hotfuzz
+  :ensure t
+  :config
+  (setq fussy-score-fn 'fussy-hotfuzz-score))
+#+end_src
+
 
