@@ -3,12 +3,29 @@
 #+EMAIL: a.vandenberg0175@gmail.com
 
 * Repos and Core Packages
+** Bootstrap straight.el
+
+#+begin_src emacs-lisp
+(defvar bootstrap-version)
+(let ((bootstrap-file
+      (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+        "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+        'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+#+end_src
+
 ** Setup ~use-package~ if not already
 #+begin_src emacs-lisp
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
-  
+
   (eval-when-compile
     (require 'use-package))
 #+end_src
@@ -19,6 +36,13 @@
 #+end_src
 
 * Core Setup
+** Separate <tab> and <C-i>
+
+#+begin_src emacs-lisp
+  (define-key input-decode-map [?\C-i] [C-i])
+  (define-key input-decode-map [?\C-\S-i] [C-S-i])
+#+end_src
+
 ** Line Numbering
 Use hybrid relative mode. This means the current line is absolute, but all others are relative.
 
@@ -29,6 +53,9 @@ Use hybrid relative mode. This means the current line is absolute, but all other
 #+end_src
 
 ** Line Wraping
+#+begin_src emacs-lisp
+  (global-visual-line-mode)
+#+end_src
 *** Visual Fill Column
 Wraps lines at fill-column
 #+begin_src emacs-lisp
@@ -88,7 +115,31 @@ There may be a better place for me to enable adaptive-wrap-prefix-mode.
     :ensure t)
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 #+end_src
-  
+
+*** phscroll
+
+#+begin_src emacs-lisp
+  (straight-use-package '(phscroll :host github
+				   :repo "misohena/phscroll"
+				   :branch "master"))
+  (setq org-startup-truncated nil)
+  (with-eval-after-load "org"
+    (require 'org-phscroll))
+#+end_src
+
+** Key Bindings
+*** Rebing C-u universal argument
+=evil-mode= uses =C-u= for scrolling. The universal argument is still useful.
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-S-M-u") 'universal-argument)
+#+end_src
+
+*** ESC Cancels All
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+#+end_src
+
 ** Window Managment
 #+begin_src emacs-lisp
   (use-package window
@@ -167,6 +218,7 @@ Show the line and column number.
 #+end_src
 
 ** COMMENT Font
+Used for testing purposes
 #+begin_src emacs-lisp
     (require 'cl-lib)
   (require 'cl-extra)
@@ -182,6 +234,7 @@ Show the line and column number.
 #+end_src
 
 * Evil Mode
+
 #+begin_src emacs-lisp
   (use-package evil
     :ensure t
@@ -189,8 +242,6 @@ Show the line and column number.
     (setq evil-want-C-u-scroll t)
     :config
     (evil-mode t)
-
-    (global-visual-line-mode)
 
     ;; Make evil-mode up/down operate in screen lines instead of logical lines
     (define-key evil-motion-state-map "j" 'evil-next-visual-line)
@@ -215,6 +266,24 @@ Show the line and column number.
       (require 'evil-org-agenda)
       (evil-org-agenda-set-keys))
   )
+#+end_src
+
+** Fix tab and C-i keys
+
+Evil mode messes with the emacs key bindings for ~TAB~ and ~C-i~ because in terminal these are the same thing. I found [[https://github.com/wasamasa/dotemacs/blob/master/init.org][someone's emacs file]] that solves these problems in an elegant way.
+Anything not bound in evil mode will pass through to emacs. SPC, RET and TAB are not useful in vim.
+#+begin_src emacs-lisp
+  (with-eval-after-load 'evil-maps
+    (define-key evil-motion-state-map (kbd "SPC") nil)
+    (define-key evil-motion-state-map (kbd "RET") nil)
+    (define-key evil-motion-state-map (kbd "TAB") nil)
+    ;; C-i in terminal is the same as TAB. Re-bind C-i to vim
+    (define-key evil-motion-state-map (kbd "<C-i>") 'evil-jump-forward))
+  ;; other posiblities for the tab C-i problem
+  ;;(define-key input-decode-map [?\C-i] [C-i])
+  ;;(define-key input-decode-map [?\C-\S-i] [C-S-i])
+  ;;(map! :map 'evil-motion-state-map "C-i" nil)
+  ;;(global-set-key (kbd "<C-i>") 'evil-jump-forward)
 #+end_src
 
 * Vulpea
@@ -298,6 +367,7 @@ This provides extra functionality to org agenda
     :after (vulpea)
     :config
     (setq org-M-RET-may-split-line nil)
+    (setq org-return-follows-link  t)
     (setq org-todo-keywords
       `((sequence "TODO(t)" "WAITING(w)" "NEXT(n)"
 		  "|" "DONE(d)" "STALE(s)")
@@ -316,78 +386,86 @@ This provides extra functionality to org agenda
 #+end_src
 
 ** Org Agenda
+#+begin_src emacs-lisp
+  ;;(setq org-work-directory "~/org-roam/work/")
+  ;;'(org-agenda-files (list org-roam-directory org-work-directory)))
+  ;;(list org-roam-directory org-work-directory)
+#+end_src
+
 
 #+begin_src emacs-lisp
 
-  (use-package org-agenda
-    :after (org)
-    :config
-    (setq org-agenda-tags-column -80)
-;;    (setq org-agenda-files (list org-roam-directory))
-;;    (setq org-agenda-files (apply 'append
-;;			      (mapcar
-;;			       (lambda (directory)
-;;				 (directory-files-recursively
-;;				  directory org-agenda-file-regexp))
-;;			       '("~/org-roam/"))))
-  (setq org-agenda-files (append
-                        (directory-files-recursively org-roam-directory org-agenda-file-regexp)))
-    (setq org-agenda-prefix-format '(
-      ;; (agenda  . " %i %-12:c%?-12t% s") ;; file name + org-agenda-entry-type
-      (agenda  . " %i • %?-12t% s")
-      ;; (agenda  . "  • ")
-      (timeline  . "  % s")
-      (todo  . " %i %-12:c")
-      (tags  . " %i %-12:c")
-      (search . " %i %-12:c")))
-    (define-key minibuffer-local-completion-map (kbd "SPC") 'self-insert-command)
+     (use-package org-agenda
+       :after (org)
+       :config
+       (setq org-agenda-tags-column -80)
 
-    (setq org-agenda-custom-commands
-      '(("n" "Agenda and all TODOs"
-	 ((agenda "" nil)
-	(alltodo "" nil))
-	 nil)
+       (setq org-directory "~/org-roam/")
+       (setq org-work-directory "~/org-roam/work/")
+       (setq org-agenda-files (list org-roam-directory org-work-directory))
+       ;;  (setq org-agenda-files (append
+       ;;                        (directory-files-recursively org-roam-directory org-agenda-file-regexp)))
+       (setq org-agenda-prefix-format '(
+	 ;; (agenda  . " %i %-12:c%?-12t% s") ;; file name + org-agenda-entry-type
+	 (agenda  . " %i • %?-12t% s")
+	 ;; (agenda  . "  • ")
+	 (timeline  . "  % s")
+	 (todo  . " %i %-12:c")
+	 (tags  . " %i %-12:c")
+	 (search . " %i %-12:c")))
+       (define-key minibuffer-local-completion-map (kbd "SPC") 'self-insert-command)
 
-	("x" "Agenda and next action items"
-	((agenda "" nil)
-	 (tags "+@work+TODO=\"NEXT\""
-	   ((org-agenda-overriding-header "@work Next Tasks")
-	    (org-agenda-prefix-format '(
-		  (tags  . " %i %(vulpea-agenda-category 12) ")
-	     )
+       (setq org-agenda-custom-commands
+	 '(("n" "Agenda and all TODOs"
+	    ((agenda "" nil)
+	   (alltodo "" nil))
+	    nil)
+
+	   ("x" "Agenda and next action items"
+	   ((agenda "" nil)
+	    (tags "+CATEGORY=\"work\"+TODO=\"NEXT\""
+	      ((org-agenda-overriding-header "Work Next Tasks")
+	       (org-agenda-prefix-format '(
+		     (tags  . " %i %(vulpea-agenda-title 12) ")
+		)
+	       )
+	      )
+	    )
+	    (tags "+CATEGORY=\"work\"+TODO=\"WAITING\""
+	      ((org-agenda-overriding-header "Work Waiting Tasks")
+	       (org-agenda-prefix-format '(
+		     (tags  . " %i %(vulpea-agenda-title 12) ")
+		)
+	       )
+	      )
+	    )
+	    (tags "-CATEGORY=\"work\"-someday+TODO=\"NEXT\""
+	      ((org-agenda-overriding-header "Everything Else Next Tasks")
+	       (org-agenda-prefix-format '(
+		     (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
+		     (todo  . " %i %(vulpea-agenda-title 12) ")
+		     (tags  . " %i %(vulpea-agenda-title 12) ")
+		     (search . " %i %(vulpea-agenda-title 12) "))
+	       )
+	      )
+	    )
+	    (tags "-CATEGORY=\"work\"-someday+TODO=\"WAITING\""
+	      ((org-agenda-overriding-header "Everything Else Waiting Tasks")
+	       (org-agenda-prefix-format '(
+		     (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
+		     (todo  . " %i %(vulpea-agenda-title 12) ")
+		     (tags  . " %i %(vulpea-agenda-title 12) ")
+		     (search . " %i %(vulpea-agenda-title 12) "))
+	       )
+	      )
 	    )
 	   )
-	 )
-	 (tags "+CATEGORY=\"work\"+TODO=\"NEXT\""
-	   ((org-agenda-overriding-header "Work Next Tasks")
-	    (org-agenda-prefix-format '(
-		  (tags  . " %i %(vulpea-agenda-title 12) ")
-	     )
-	    )
-	   )
-	 )
-	 (tags "+@work+TODO=\"WAITING\""
-	   ((org-agenda-overriding-header "@work Waiting Tasks")
-	    (org-agenda-prefix-format '(
-		  (tags  . " %i %(vulpea-agenda-category 12) ")
-	     )
-	    )
-	   )
-	 )
-	 (tags "-@work-someday+TODO=\"NEXT\""
-	   ((org-agenda-overriding-header "Everything Else")
-	    (org-agenda-prefix-format '(
-		  (agenda  . " %i %(vulpea-agenda-category 12)%?-12t% s")
-		  (todo  . " %i %(vulpea-agenda-category 12) ")
-		  (tags  . " %i %(vulpea-agenda-category 12) ")
-		  (search . " %i %(vulpea-agenda-category 12) "))
-	    )
-	   )
-	 )
-	)
-	nil nil)))
-    )
+	   nil nil)))
+       )
 #+end_src
+
+#+RESULTS:
+: t
 
 ** Org mode key bindings
 Bindings for following links with mouse and hjkl.
@@ -411,6 +489,21 @@ Activate babel languages
     '((shell . t)))
 #+end_src
 
+** Org Structure Templates
+#+begin_src emacs-lisp
+  (setq org-structure-template-alist '(("a" . "export ascii")
+				       ("c" . "center")
+				       ("C" . "comment")
+				       ("e" . "example")
+				       ("E" . "export")
+				       ("h" . "export html")
+				       ("l" . "log")
+				       ("L" . "export latex")
+				       ("q" . "quote")
+				       ("s" . "src")
+				       ("v" . "verse")))
+#+end_src
+
 * Org-roam
 #+begin_src emacs-lisp
     (use-package org-roam
@@ -426,6 +519,20 @@ Activate babel languages
 	     "%?"
 	     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
 	     :unnarrowed t)
+	    ("c" "Contact" plain
+	     "%?"
+	     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+	     "
+  :PROPERTIES:
+  :END:
+  ,#+TITLE: ${title}
+  ,* %{title}'s Birthday\n\n
+  ,* Phone Number\n\n
+  ,* Address\n\n
+  "
+	     )
+	    )
+
 	    ("j" "Jira" plain
 	     "%?"
 	     :if-new (file+head "work/%<%Y%m%d%H%M%S>-${slug}.org"
@@ -437,7 +544,7 @@ Activate babel languages
   ,#+TITLE: ${title}
   "
 	     )
-            )
+	    )
 	    ("w" "Work" plain
 	     "%?"
 	     :if-new (file+head "work/%<%Y%m%d%H%M%S>-${slug}.org"
@@ -492,6 +599,15 @@ Use ~vertico-reverse-mode~ to get bottom up completion. Still need the regular ~
 ** NEXT vim ex ":" automatic completion.
 ** TODO reverse mode not always shrinking
 
+* Consult (Searching)
+#+begin_src emacs-lisp
+  (use-package consult
+    :ensure t
+    :config
+    (global-set-key (kbd "C-S-M-p") #'consult-ripgrep)
+    )
+#+end_src
+
 * Completion
 
 Compleions that work similar to narrowing in vim's fzf buffer. Allows narrowing by partial typing.
@@ -521,3 +637,9 @@ I will have to test more.
 #+end_src
 
 
+
+* Magit
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t)
+#+end_src
