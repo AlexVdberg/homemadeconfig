@@ -35,6 +35,14 @@
   (setq org-roam-directory "~/org-roam/")
 #+end_src
 
+** el-patch for patches
+#+begin_src emacs-lisp
+  (use-package el-patch
+    :ensure t)
+#+end_src
+
+#+RESULTS:
+
 * Core Setup
 ** Separate <tab> and <C-i>
 
@@ -53,9 +61,11 @@ Use hybrid relative mode. This means the current line is absolute, but all other
 #+end_src
 
 ** Line Wraping
+
 #+begin_src emacs-lisp
   (global-visual-line-mode)
 #+end_src
+
 *** Visual Fill Column
 Wraps lines at fill-column
 #+begin_src emacs-lisp
@@ -161,6 +171,21 @@ There may be a better place for me to enable adaptive-wrap-prefix-mode.
 	(window-height . 0.25)
 	(side . bottom)
 	(slot . 1))
+       ("\\*help\\*"
+	(display-buffer-in-side-window)
+	(window-height . 0.25)
+	(side . bottom)
+	(slot . 0))
+       ("\\*warnings\\*"
+	(display-buffer-in-side-window)
+	(window-height . 0.25)
+	(side . bottom)
+	(slot . 3))
+       ("CAPTURE-*"
+	(display-buffer-in-side-window)
+	(window-height . 0.25)
+	(side . bottom)
+	(slot . 2))
       )
     )
   )
@@ -172,6 +197,9 @@ There may be a better place for me to enable adaptive-wrap-prefix-mode.
   ;; Does not change behavior of other commands that make new windows.
   (add-to-list 'org-link-frame-setup '(file . find-file))
 #+end_src
+
+#+RESULTS:
+: ((file . find-file) (vm . vm-visit-folder-other-frame) (vm-imap . vm-visit-imap-folder-other-frame) (gnus . org-gnus-no-new-news) (file . find-file-other-window) (wl . wl-other-frame))
 
 ** Splash Screen
 Remove the splash screen
@@ -439,7 +467,15 @@ This provides extra functionality to org agenda
 	       )
 	      )
 	    )
-	    (tags "-CATEGORY=\"work\"-someday+TODO=\"NEXT\""
+	    (tags "+CATEGORY=\"work-related\"+TODO=\"NEXT\""
+	      ((org-agenda-overriding-header "Work Related Tasks")
+	       (org-agenda-prefix-format '(
+		     (tags  . " %i %(vulpea-agenda-title 12) ")
+		)
+	       )
+	      )
+	    )
+	    (tags "-CATEGORY=\"work\"-CATEGORY=\"work-related\"+TODO=\"NEXT\""
 	      ((org-agenda-overriding-header "Everything Else Next Tasks")
 	       (org-agenda-prefix-format '(
 		     (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
@@ -449,7 +485,7 @@ This provides extra functionality to org agenda
 	       )
 	      )
 	    )
-	    (tags "-CATEGORY=\"work\"-someday+TODO=\"WAITING\""
+	    (tags "-CATEGORY=\"work\"+TODO=\"WAITING\""
 	      ((org-agenda-overriding-header "Everything Else Waiting Tasks")
 	       (org-agenda-prefix-format '(
 		     (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
@@ -504,6 +540,21 @@ Activate babel languages
 				       ("v" . "verse")))
 #+end_src
 
+** Org Capture window patch
+The org capture window deletes all other windows when doing a capture. This is very anoying. Patch out the ~delete-other-window~ call.
+#+begin_src emacs-lisp
+  (setq el-patch-warn-on-eval-template nil)
+  (el-patch-feature org-capture)
+  (with-eval-after-load 'org-capture
+    (el-patch-define-and-eval-template
+     (defun org-capture-place-template)
+     (el-patch-remove (delete-other-windows))))
+#+end_src
+
+#+RESULTS:
+: org-capture-place-template
+*** TODO Fix el-patch to not warn on eval template
+
 * Org-roam
 #+begin_src emacs-lisp
     (use-package org-roam
@@ -551,6 +602,17 @@ Activate babel languages
 	     "
   :PROPERTIES:
   :CATEGORY: work
+  :END:
+  ,#+TITLE: ${title}
+  "
+	     )
+	   )
+	    ("r" "Work Related" plain
+	     "%?"
+	     :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+	     "
+  :PROPERTIES:
+  :CATEGORY: work-related
   :END:
   ,#+TITLE: ${title}
   "
@@ -637,9 +699,23 @@ I will have to test more.
 #+end_src
 
 
-
 * Magit
 #+begin_src emacs-lisp
   (use-package magit
     :ensure t)
 #+end_src
+
+* LSP Mode
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    :commands (lsp lsp-deferred)
+    :hook (prog-mode . lsp-deferred)
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    (setq gc-cons-threshold 100000000)
+    (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  )
+#+end_src
+
