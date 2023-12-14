@@ -140,3 +140,4 @@ export NOTES_DIR=~/Documents/notes
 
 # Add scripts to path
 export PATH=$PATH:$HOME/.config/homemadeconfig/scripts
+export PATH="$HOME/local/bin:$PATH"

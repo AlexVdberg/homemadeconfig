@@ -51,7 +51,7 @@ if has("clipboard")
 end
 
 " exclude build folder from searches with wildignore
-set wildignore+=*/build/*
+"set wildignore+=*/build/*
 
 " Functions
 function! StripTrailingWhitespace()

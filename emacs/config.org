@@ -63,7 +63,9 @@ Use hybrid relative mode. This means the current line is absolute, but all other
 ** Line Wraping
 
 #+begin_src emacs-lisp
-  (global-visual-line-mode)
+  (with-eval-after-load 'org       
+    (add-hook 'org-mode-hook #'visual-line-mode))
+  ;;(global-visual-line-mode)
 #+end_src
 
 *** Visual Fill Column
@@ -147,12 +149,19 @@ There may be a better place for me to enable adaptive-wrap-prefix-mode.
 *** ESC Cancels All
 
 #+begin_src emacs-lisp
+  ;; Stop keyboard-escape-quit from closing all other windows in some instances
+  (defadvice keyboard-escape-quit
+      (around keyboard-escape-quit-dont-close-windows activate)
+    (let ((buffer-quit-function (lambda () ())))
+      ad-do-it))
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 #+end_src
 
 ** Window Managment
 #+begin_src emacs-lisp
   (use-package window
+    ;; Built-in. Dont load with package.el
+    :ensure nil
     :custom
     ;; Change window selection
     (display-buffer-base-action
@@ -268,6 +277,9 @@ Used for testing purposes
     :ensure t
     :init
     (setq evil-want-C-u-scroll t)
+    ;; control the mini buffer with evil key bindings
+    (setq evil-want-minibuffer t)
+    (setq evil-want-keybinding nil)
     :config
     (evil-mode t)
 
@@ -296,6 +308,9 @@ Used for testing purposes
   )
 #+end_src
 
+#+RESULTS:
+: t
+
 ** Fix tab and C-i keys
 
 Evil mode messes with the emacs key bindings for ~TAB~ and ~C-i~ because in terminal these are the same thing. I found [[https://github.com/wasamasa/dotemacs/blob/master/init.org][someone's emacs file]] that solves these problems in an elegant way.
@@ -313,6 +328,19 @@ Anything not bound in evil mode will pass through to emacs. SPC, RET and TAB are
   ;;(map! :map 'evil-motion-state-map "C-i" nil)
   ;;(global-set-key (kbd "<C-i>") 'evil-jump-forward)
 #+end_src
+
+** Evil colleciton
+
+#+begin_src emacs-lisp
+  (use-package evil-collection
+  :after evil
+  :ensure t
+  :config
+  (evil-collection-init '(dired)))
+#+end_src
+
+#+RESULTS:
+: t
 
 * Vulpea
 This provides extra functionality to org agenda
@@ -423,81 +451,83 @@ This provides extra functionality to org agenda
 
 #+begin_src emacs-lisp
 
-     (use-package org-agenda
-       :after (org)
-       :config
-       (setq org-agenda-tags-column -80)
+  (use-package org-agenda
+    ;; Built-in. Dont load with package.el
+    :ensure nil
+    :after (org)
+    :config
+    (setq org-agenda-tags-column -80)
 
-       (setq org-directory "~/org-roam/")
-       (setq org-work-directory "~/org-roam/work/")
-       (setq org-agenda-files (list org-roam-directory org-work-directory))
-       ;;  (setq org-agenda-files (append
-       ;;                        (directory-files-recursively org-roam-directory org-agenda-file-regexp)))
-       (setq org-agenda-prefix-format '(
-	 ;; (agenda  . " %i %-12:c%?-12t% s") ;; file name + org-agenda-entry-type
-	 (agenda  . " %i • %?-12t% s")
-	 ;; (agenda  . "  • ")
-	 (timeline  . "  % s")
-	 (todo  . " %i %-12:c")
-	 (tags  . " %i %-12:c")
-	 (search . " %i %-12:c")))
-       (define-key minibuffer-local-completion-map (kbd "SPC") 'self-insert-command)
+    (setq org-directory "~/org-roam/")
+    (setq org-work-directory "~/org-roam/work/")
+    (setq org-agenda-files (list org-roam-directory org-work-directory))
+    ;;  (setq org-agenda-files (append
+    ;;                        (directory-files-recursively org-roam-directory org-agenda-file-regexp)))
+    (setq org-agenda-prefix-format '(
+      ;; (agenda  . " %i %-12:c%?-12t% s") ;; file name + org-agenda-entry-type
+      (agenda  . " %i • %?-12t% s")
+      ;; (agenda  . "  • ")
+      (timeline  . "  % s")
+      (todo  . " %i %-12:c")
+      (tags  . " %i %-12:c")
+      (search . " %i %-12:c")))
+    (define-key minibuffer-local-completion-map (kbd "SPC") 'self-insert-command)
 
-       (setq org-agenda-custom-commands
-	 '(("n" "Agenda and all TODOs"
-	    ((agenda "" nil)
-	   (alltodo "" nil))
-	    nil)
+    (setq org-agenda-custom-commands
+      '(("n" "Agenda and all TODOs"
+	 ((agenda "" nil)
+	(alltodo "" nil))
+	 nil)
 
-	   ("x" "Agenda and next action items"
-	   ((agenda "" nil)
-	    (tags "+CATEGORY=\"work\"+TODO=\"NEXT\""
-	      ((org-agenda-overriding-header "Work Next Tasks")
-	       (org-agenda-prefix-format '(
-		     (tags  . " %i %(vulpea-agenda-title 12) ")
-		)
-	       )
-	      )
-	    )
-	    (tags "+CATEGORY=\"work\"+TODO=\"WAITING\""
-	      ((org-agenda-overriding-header "Work Waiting Tasks")
-	       (org-agenda-prefix-format '(
-		     (tags  . " %i %(vulpea-agenda-title 12) ")
-		)
-	       )
-	      )
-	    )
-	    (tags "+CATEGORY=\"work-related\"+TODO=\"NEXT\""
-	      ((org-agenda-overriding-header "Work Related Tasks")
-	       (org-agenda-prefix-format '(
-		     (tags  . " %i %(vulpea-agenda-title 12) ")
-		)
-	       )
-	      )
-	    )
-	    (tags "-CATEGORY=\"work\"-CATEGORY=\"work-related\"+TODO=\"NEXT\""
-	      ((org-agenda-overriding-header "Everything Else Next Tasks")
-	       (org-agenda-prefix-format '(
-		     (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
-		     (todo  . " %i %(vulpea-agenda-title 12) ")
-		     (tags  . " %i %(vulpea-agenda-title 12) ")
-		     (search . " %i %(vulpea-agenda-title 12) "))
-	       )
-	      )
-	    )
-	    (tags "-CATEGORY=\"work\"+TODO=\"WAITING\""
-	      ((org-agenda-overriding-header "Everything Else Waiting Tasks")
-	       (org-agenda-prefix-format '(
-		     (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
-		     (todo  . " %i %(vulpea-agenda-title 12) ")
-		     (tags  . " %i %(vulpea-agenda-title 12) ")
-		     (search . " %i %(vulpea-agenda-title 12) "))
-	       )
-	      )
+	("x" "Agenda and next action items"
+	((agenda "" nil)
+	 (tags "+CATEGORY=\"work\"+TODO=\"NEXT\""
+	   ((org-agenda-overriding-header "Work Next Tasks")
+	    (org-agenda-prefix-format '(
+		  (tags  . " %i %(vulpea-agenda-title 12) ")
+	     )
 	    )
 	   )
-	   nil nil)))
-       )
+	 )
+	 (tags "+CATEGORY=\"work\"+TODO=\"WAITING\""
+	   ((org-agenda-overriding-header "Work Waiting Tasks")
+	    (org-agenda-prefix-format '(
+		  (tags  . " %i %(vulpea-agenda-title 12) ")
+	     )
+	    )
+	   )
+	 )
+	 (tags "+CATEGORY=\"work-related\"+TODO=\"NEXT\""
+	   ((org-agenda-overriding-header "Work Related Tasks")
+	    (org-agenda-prefix-format '(
+		  (tags  . " %i %(vulpea-agenda-title 12) ")
+	     )
+	    )
+	   )
+	 )
+	 (tags "-CATEGORY=\"work\"-CATEGORY=\"work-related\"+TODO=\"NEXT\""
+	   ((org-agenda-overriding-header "Everything Else Next Tasks")
+	    (org-agenda-prefix-format '(
+		  (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
+		  (todo  . " %i %(vulpea-agenda-title 12) ")
+		  (tags  . " %i %(vulpea-agenda-title 12) ")
+		  (search . " %i %(vulpea-agenda-title 12) "))
+	    )
+	   )
+	 )
+	 (tags "-CATEGORY=\"work\"+TODO=\"WAITING\""
+	   ((org-agenda-overriding-header "Everything Else Waiting Tasks")
+	    (org-agenda-prefix-format '(
+		  (agenda  . " %i %(vulpea-agenda-title 12)%?-12t% s")
+		  (todo  . " %i %(vulpea-agenda-title 12) ")
+		  (tags  . " %i %(vulpea-agenda-title 12) ")
+		  (search . " %i %(vulpea-agenda-title 12) "))
+	    )
+	   )
+	 )
+	)
+	nil nil)))
+    )
 #+end_src
 
 #+RESULTS:
@@ -667,8 +697,24 @@ Use ~vertico-reverse-mode~ to get bottom up completion. Still need the regular ~
     :ensure t
     :config
     (global-set-key (kbd "C-S-M-p") #'consult-ripgrep)
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+	  xref-show-definitions-function #'consult-xref)
+    (consult-customize
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     ;; my/command-wrapping-consult    ;; disable auto previews inside my command
+     :preview-key '(:debounce 0.4 any) ;; Option 1: Delay preview
+     )
+    ;; add '-L' to follow sym-links
+    (setq consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=1000 --path-separator /   --smart-case --no-heading --with-filename --line-number --search-zip -L")
     )
 #+end_src
+
+#+RESULTS:
+: t
 
 * Completion
 
@@ -698,12 +744,21 @@ I will have to test more.
   (setq fussy-score-fn 'fussy-hotfuzz-score))
 #+end_src
 
-
 * Magit
 #+begin_src emacs-lisp
   (use-package magit
     :ensure t)
 #+end_src
+
+* Company mode
+
+#+begin_src emacs-lisp
+  (use-package company
+    :ensure t
+    )
+#+end_src
+
+#+RESULTS:
 
 * LSP Mode
 
@@ -715,7 +770,53 @@ I will have to test more.
     :init
     (setq lsp-keymap-prefix "C-c l")
     (setq gc-cons-threshold 100000000)
-    (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  )
+    (setq read-process-output-max (* 10240 1024)) ;; 2mb
+    (setq lsp-clients-clangd-executable "/home/MAGICLEAP/avandenberg/local/bin/clangd")
+    (setq lsp-enable-snippet nil)
+    ;;(setq lsp-clients-clangd-args '("--background-index"))
+    )
 #+end_src
 
+** lsp-java
+
+#+begin_src emacs-lisp
+  (use-package lsp-java
+    :config
+    (add-hook 'java-mode-hook 'lsp)
+    :init
+    (setq lsp-java-imports-gradle-wrapper-checksums
+	  [
+	   (:sha256 "e2b82129ab64751fd40437007bd2f7f2afb3c6e41a9198e628650b22d5824a14"
+		    :allowed t)
+	   (:sha256 "66008236d4dd3eb81bf343b12a95350142ad85c996945ff2cbfdb14bde432498"
+		    :allowed t)
+	   (:sha256 "683c84e09ad53777228f43b0b54b421c1d83b15df7fd6f7e3567a1a8f1d6a76c"
+		    :allowed t)
+	   (:sha256 "0d11b3cdba67011004a49e8585fcdb1f3a2563abbaccba6ceccabf65c3c20ed6"
+		    :allowed t)
+						     ])
+    )
+#+end_src
+
+#+RESULTS:
+: t
+
+* Consult-lsp
+
+#+begin_src emacs-lisp
+  (use-package consult-lsp
+    :ensure t)
+#+end_src
+
+#+RESULTS:
+
+* Winner mode
+
+#+begin_src emacs-lisp
+  (use-package winner
+    :init
+    (winner-mode 1)
+    )
+#+end_src
+
+#+RESULTS:
