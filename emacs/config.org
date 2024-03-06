@@ -333,14 +333,13 @@ Anything not bound in evil mode will pass through to emacs. SPC, RET and TAB are
 
 #+begin_src emacs-lisp
   (use-package evil-collection
-  :after evil
-  :ensure t
-  :config
-  (evil-collection-init '(dired)))
+    :after (evil magic)
+    :ensure t
+    :config
+    (evil-collection-init '(dired magit)))
 #+end_src
 
 #+RESULTS:
-: t
 
 * Vulpea
 This provides extra functionality to org agenda
@@ -550,9 +549,10 @@ Bindings for following links with mouse and hjkl.
 
 Activate babel languages
 #+begin_src emacs-lisp
+  ;; activate languages
   (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((shell . t)))
+   'org-babel-load-languages
+   '((shell . t)))
 #+end_src
 
 ** Org Structure Templates
@@ -771,8 +771,9 @@ I will have to test more.
     (setq lsp-keymap-prefix "C-c l")
     (setq gc-cons-threshold 100000000)
     (setq read-process-output-max (* 10240 1024)) ;; 2mb
-    (setq lsp-clients-clangd-executable "/home/MAGICLEAP/avandenberg/local/bin/clangd")
+    (setq lsp-clients-clangd-executable "/home/MAGICLEAP/avandenberg/local/jbin/clangd")
     (setq lsp-enable-snippet nil)
+    (setq lsp-warn-no-match-clients nil)
     ;;(setq lsp-clients-clangd-args '("--background-index"))
     )
 #+end_src
@@ -781,6 +782,7 @@ I will have to test more.
 
 #+begin_src emacs-lisp
   (use-package lsp-java
+    :after (lsp)
     :config
     (add-hook 'java-mode-hook 'lsp)
     :init
@@ -794,6 +796,10 @@ I will have to test more.
 		    :allowed t)
 	   (:sha256 "0d11b3cdba67011004a49e8585fcdb1f3a2563abbaccba6ceccabf65c3c20ed6"
 		    :allowed t)
+	   (:sha256 "ee3739525a995bcb5601621a6e2daec1f183bbefc375743acc235cec33547e04"
+		    :allowed t)
+	   (:sha256 "ee3739525a995bcb5601621a6e2daec1f183bbefc375743acc235cec33547e04"
+		    :allowed t)
 						     ])
     )
 #+end_src
@@ -801,11 +807,43 @@ I will have to test more.
 #+RESULTS:
 : t
 
-* Consult-lsp
+*** Error when compiling
+java.lang.RuntimeException: SDK location not found. Define location with sdk.dir in the local.properties file or with an ANDROID_HOME environment variable.
+
+#+begin_src emacs-lisp
+  ;;  (setenv "JAVA_HOME" "/usr/lib/jvm/java-14-openjdk-amd64")
+  (setenv "ANDROID_HOME" "~/Android/Sdk/")
+  (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true" "-Xmx2G" "-Xms100m"))
+#+end_src
+
+#+RESULTS:
+: ~/Android/Sdk
+
+*** Java Heap Space
+Dec 19, 2023, 10:03:04 AM An internal error occurred during: "Updating workspace".
+Java heap space
+java.lang.OutOfMemoryError: Java heap space
+
+Dec 19, 2023, 10:03:04 AM Unhandled error
+Java heap space
+java.lang.OutOfMemoryError: Java heap space
+
+** lsp-python
+
+#+begin_src emacs-lisp
+  (use-package pyvenv
+    :after (lsp)
+    :ensure t
+    )
+#+end_src
+
+** Consult-lsp
 
 #+begin_src emacs-lisp
   (use-package consult-lsp
-    :ensure t)
+    :ensure t
+    :after (lsp)
+    )
 #+end_src
 
 #+RESULTS:
@@ -820,3 +858,48 @@ I will have to test more.
 #+end_src
 
 #+RESULTS:
+
+* mermaid diagrams
+
+Following advice from a [[https://sachachua.com/blog/2023/10/getting-mermaid-js-running-on-my-system-needed-to-symlink-chromium-for-puppeteer/][blog post on configuring mermaid]] to get mmdc working.
+
+#+begin_src emacs-lisp
+  (use-package ob-mermaid
+    :after (org)
+    :config
+    ;; set mermaid path
+    (setq ob-mermaid-cli-path "/usr/bin/mmdc")
+    ;; activate languages
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((mermaid . t)
+       (scheme . t)))
+    (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
+    )
+#+end_src
+
+#+RESULTS:
+: t
+
+* image+
+
+#+begin_src emacs-lisp
+  (use-package image+
+    :after (iamge)
+    (eval-after-load 'image '(require 'image+))
+  )
+#+end_src
+
+* smart-tabs
+
+#+begin_src emacs-lisp
+  (setq-default c-basic-offset 8)
+  (use-package smart-tabs-mode
+    :ensure t
+    :config
+    (setq indent-tabs-mode t)
+    (smart-tabs-add-language-support py python-mode-hook
+      ((python-indent-line-function . standard-indent)))
+    (smart-tabs-insinuate 'c 'c++ 'java 'py)
+    )
+#+end_src

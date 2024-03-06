@@ -177,6 +177,7 @@ bindsym $mod+r mode "resize"
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
+        id bar-1
         status_command i3status
 }
 
@@ -190,3 +191,8 @@ bindsym $mod+u exec gnome-screenshot
 
 # display is down 433 pixels
 #exec --no-startup-id xrandr --output HDMI-0 --auto --panning 2160x3840+0+0 --left-of DP-2 --rotate left --output DP-0 --auto --panning 2160x3840+6000+0 --right-of DP-2 --rotate right --output DP-2 --auto --panning 3840x2160+2160+433
+
+# Start policykit for password prompts
+# sudo apt install policykit-desktop-privileges
+# sudo apt install policykit-1-gnome
+exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &

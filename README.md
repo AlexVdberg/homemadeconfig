@@ -16,6 +16,12 @@ cp ~/.config/homemadeconfig/.Xresources ~/
 Install programs on ubuntu
 ```
 sudo apt install gnome-screenshot ddcutil
+
+# Install policykit for password prompts
+sudo apt install policykit-desktop-privileges
+sudo apt install policykit-1-gnome
+# Add exec to config
+#$exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
 ```
 
 Install programs on manjaro/arch
