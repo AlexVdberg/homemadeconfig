@@ -185,7 +185,7 @@ There may be a better place for me to enable adaptive-wrap-prefix-mode.
 	(window-height . 0.25)
 	(side . bottom)
 	(slot . 0))
-       ("\\*warnings\\*"
+       ("\\*Warnings\\*"
 	(display-buffer-in-side-window)
 	(window-height . 0.25)
 	(side . bottom)
@@ -201,6 +201,9 @@ There may be a better place for me to enable adaptive-wrap-prefix-mode.
 
   ;; If a popup does happen, don't resize windows to be equal-sized
   (setq even-window-sizes nil)
+
+  ;; Auto select help window when it opens
+  (setq help-window-select t)
 
   ;; Follow links in same window instead of new one.
   ;; Does not change behavior of other commands that make new windows.
@@ -333,13 +336,14 @@ Anything not bound in evil mode will pass through to emacs. SPC, RET and TAB are
 
 #+begin_src emacs-lisp
   (use-package evil-collection
-    :after (evil magic)
+    :after (evil magit)
     :ensure t
     :config
     (evil-collection-init '(dired magit)))
 #+end_src
 
 #+RESULTS:
+: t
 
 * Vulpea
 This provides extra functionality to org agenda
@@ -771,7 +775,7 @@ I will have to test more.
     (setq lsp-keymap-prefix "C-c l")
     (setq gc-cons-threshold 100000000)
     (setq read-process-output-max (* 10240 1024)) ;; 2mb
-    (setq lsp-clients-clangd-executable "/home/MAGICLEAP/avandenberg/local/jbin/clangd")
+    (setq lsp-clients-clangd-executable "/home/MAGICLEAP/avandenberg/local/bin/clangd")
     (setq lsp-enable-snippet nil)
     (setq lsp-warn-no-match-clients nil)
     ;;(setq lsp-clients-clangd-args '("--background-index"))
@@ -849,6 +853,7 @@ java.lang.OutOfMemoryError: Java heap space
 #+RESULTS:
 
 * Winner mode
+Use winner mode with =Ctrl-c <left>= and =Ctrl-c <right>= to go back and forward in buffer history.
 
 #+begin_src emacs-lisp
   (use-package winner
