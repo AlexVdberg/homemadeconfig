@@ -724,6 +724,8 @@ Use ~vertico-reverse-mode~ to get bottom up completion. Still need the regular ~
 
 Compleions that work similar to narrowing in vim's fzf buffer. Allows narrowing by partial typing.
 
+Need to look into flex-style matching. It sounds similar to fussy.
+
 #+begin_src emacs-lisp
 (use-package fussy
   :ensure t
@@ -897,10 +899,15 @@ Following advice from a [[https://sachachua.com/blog/2023/10/getting-mermaid-js-
 
 * smart-tabs
 
+Produces a combination of tabs and spaces based on what is needed.
+
 #+begin_src emacs-lisp
-  (setq-default c-basic-offset 8)
   (use-package smart-tabs-mode
     :ensure t
+    :init
+    ;; c-basic-offset must be setq-default because it is per buffer
+    ;; alternative could be to use "(set-variable 'c-file-style "gnu")"
+    (setq-default c-basic-offset 8)
     :config
     (setq indent-tabs-mode t)
     (smart-tabs-add-language-support py python-mode-hook
