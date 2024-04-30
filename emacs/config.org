@@ -772,7 +772,7 @@ I will have to test more.
   (use-package lsp-mode
     :ensure t
     :commands (lsp lsp-deferred)
-    :hook (prog-mode . lsp-deferred)
+    :hook (c-mode . lsp-deferred)
     :init
     (setq lsp-keymap-prefix "C-c l")
     (setq gc-cons-threshold 100000000)
@@ -915,3 +915,4 @@ Produces a combination of tabs and spaces based on what is needed.
     (smart-tabs-insinuate 'c 'c++ 'java 'py)
     )
 #+end_src
+

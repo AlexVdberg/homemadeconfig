@@ -22,7 +22,26 @@ sudo apt install policykit-desktop-privileges
 sudo apt install policykit-1-gnome
 # Add exec to config
 #$exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
+
+# Copy window layout
+sudo cp ~/.config/homeadeconfig/20-monitor.conf /usr/share/X11/xorg.conf.d/20-monitor.conf
+
+# Vim
+sudo apt install vim
+
+# Emacs
+sudo add-apt-repository ppa:kelleyk/emacs
+sudo apt update
+sudo apt install emacs28
+mkdir -p ~/org-roam
+
+## Install node and npm and nvm
+# https://nodejs.org/en/download/package-manager
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+nvm install 20
+sudo npm install -g @mermaid-js/mermaid-cli
 ```
+
 
 Install programs on manjaro/arch
 ```

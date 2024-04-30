@@ -47,11 +47,11 @@ bindsym $mod+Return exec alacritty
 bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
-bindsym $mod+d exec dmenu_run
+# bindsym $mod+d exec dmenu_run
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
-# bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
+bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
 # change focus
 bindsym $mod+h focus left
@@ -191,8 +191,11 @@ bindsym $mod+u exec gnome-screenshot
 
 # display is down 433 pixels
 #exec --no-startup-id xrandr --output HDMI-0 --auto --panning 2160x3840+0+0 --left-of DP-2 --rotate left --output DP-0 --auto --panning 2160x3840+6000+0 --right-of DP-2 --rotate right --output DP-2 --auto --panning 3840x2160+2160+433
+#xrandr --output HDMI-0 --auto --pos 0x0 --rotate left --output DP-0 --auto --pos 6000x0 --rotate right --output DP-2 --auto --pos 2160x433 --output DP-4 --auto --pos 2800x2593
 
 # Start policykit for password prompts
 # sudo apt install policykit-desktop-privileges
 # sudo apt install policykit-1-gnome
 exec /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
+
+#for_window [title="ABetterXinputCa"]                       floating enable
