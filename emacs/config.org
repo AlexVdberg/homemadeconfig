@@ -433,6 +433,7 @@ This provides extra functionality to org agenda
 	(sequence "ACTIVE(a)" "|" "COMPLETE(C)")
 	(sequence "BACKLOG(b)" "MAYBE(m)" "|" "CANCLED(c)")))
 
+    (setq org-image-actual-width nil)
     (setq org-capture-templates
     `(("n" "Note" entry (file ,(concat org-roam-directory "inbox.org"))
        "* %?")
@@ -652,11 +653,25 @@ The org capture window deletes all other windows when doing a capture. This is v
   "
 	     )
 	   )
+	    ("f" "Writing" plain
+	     "%?"
+	     :if-new (file+head "writing/%<%Y%m%d%H%M%S>-${slug}.org"
+	     "
+  :PROPERTIES:
+  :CATEGORY: writing
+  :END:
+  ,#+TITLE: ${title}
+  "
+	     )
+	   )
 	  )
 	)
       :ensure t
       )
 #+end_src
+
+#+RESULTS:
+: org-roam-node-find
 
 * Vertico
 

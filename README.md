@@ -1,4 +1,9 @@
 # Setup
+Don't make the symlinks manually. Instead it woud be better to use something
+like `stow` to build the symlinks for you and then easily be able to reverse it
+later.
+
+
 Sym-link configuration files
 
 ```
