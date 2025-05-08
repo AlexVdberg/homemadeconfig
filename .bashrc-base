@@ -141,3 +141,6 @@ export NOTES_DIR=~/Documents/notes
 # Add scripts to path
 export PATH=$PATH:$HOME/.config/homemadeconfig/scripts
 export PATH="$HOME/local/bin:$PATH"
+
+# Add appimage appliations to path
+export PATH=$PATH:$HOME/Applications
