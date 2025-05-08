@@ -55,9 +55,12 @@ mp.register_event("end-file", function()
     update_watch_time(0)
 
     -- log watch time
-    mp.msg.info(string.format("End watch time: %s: %.2f", video_filename, watch_time or 0))
+    local current_date = os.date("%Y-%m-%d")
+    local current_time = os.date("%H:%M")
 
-    log_to_file(string.format("%s,%.2f", video_filename, watch_time or 0))
+    mp.msg.info(string.format("End watch time: %s, %s, %s: %.2f", current_date, current_time, video_filename, watch_time or 0))
+
+    log_to_file(string.format("%s,%s,%s,%.2f", current_date, current_time, video_filename, watch_time or 0))
 
     -- cleanup for next video
     last_time = nil
