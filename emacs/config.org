@@ -653,23 +653,23 @@ The org capture window deletes all other windows when doing a capture. This is v
   "
 	     )
 	   )
-	    ("h" "Hacking" plain
-	     "%?"
-	     :if-new (file+head "hacking/%<%Y%m%d%H%M%S>-${slug}.org"
-	     "
-  :PROPERTIES:
-  :CATEGORY: hacking
-  :END:
-  ,#+TITLE: ${title}
-  "
-	     )
-	   )
 	    ("f" "Writing" plain
 	     "%?"
 	     :if-new (file+head "writing/%<%Y%m%d%H%M%S>-${slug}.org"
 	     "
   :PROPERTIES:
   :CATEGORY: writing
+  :END:
+  ,#+TITLE: ${title}
+  "
+	     )
+	   )
+	    ("h" "Hacking" plain
+	     "%?"
+	     :if-new (file+head "hacking/%<%Y%m%d%H%M%S>-${slug}.org"
+	     "
+  :PROPERTIES:
+  :CATEGORY: hacking
   :END:
   ,#+TITLE: ${title}
   "
@@ -896,12 +896,14 @@ Use winner mode with =Ctrl-c <left>= and =Ctrl-c <right>= to go back and forward
 
 Following advice from a [[https://sachachua.com/blog/2023/10/getting-mermaid-js-running-on-my-system-needed-to-symlink-chromium-for-puppeteer/][blog post on configuring mermaid]] to get mmdc working.
 
+I had to install this separately with ~M-x package-install~
+
 #+begin_src emacs-lisp
   (use-package ob-mermaid
     :after (org)
     :config
     ;; set mermaid path
-    (setq ob-mermaid-cli-path "/usr/bin/mmdc")
+    (setq ob-mermaid-cli-path "/home/alex/.nvm/versions/node/v22.1.0/bin/mmdc")
     ;; activate languages
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -929,17 +931,17 @@ Produces a combination of tabs and spaces based on what is needed.
 I ran into issues with this auto installing it. The package is unmaintained, but a pull request fixed my problem with a [[https://github.com/jcsalomon/smarttabs/pull/54/commhttps://github.com/jcsalomon/smarttabs/pull/54/commits/b81904f67cebf7109b0f9cfe271e102962bb42aeits/b81904f67cebf7109b0f9cfe271e102962bb42ae][Cyclical dependency]]. I was able to just modify the file directly and it fixed the problem, but will not persist across new devices.
 
 #+begin_src emacs-lisp
-  (use-package smart-tabs-mode
-    :ensure t
-    :init
-    ;; c-basic-offset must be setq-default because it is per buffer
-    ;; alternative could be to use "(set-variable 'c-file-style "gnu")"
-    (setq-default c-basic-offset 8)
-    :config
-    (setq indent-tabs-mode t)
-    (smart-tabs-add-language-support py python-mode-hook
-      ((python-indent-line-function . standard-indent)))
-    (smart-tabs-insinuate 'c 'c++ 'java 'py)
-    )
+;;  (use-package smart-tabs-mode
+;;    :ensure t
+;;    :init
+;;    ;; c-basic-offset must be setq-default because it is per buffer
+;;    ;; alternative could be to use "(set-variable 'c-file-style "gnu")"
+;;    (setq-default c-basic-offset 8)
+;;    :config
+;;    (setq indent-tabs-mode t)
+;;    (smart-tabs-add-language-support py python-mode-hook
+;;      ((python-indent-line-function . standard-indent)))
+;;    (smart-tabs-insinuate 'c 'c++ 'java 'py)
+;;  )
 #+end_src
 
