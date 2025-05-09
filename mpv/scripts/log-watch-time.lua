@@ -4,7 +4,10 @@ local last_time = nil
 local seeking = false
 local watch_time = nil
 local this_time = nil
+local total_time = nil
 local video_filename = nil
+local sub_skip_enabled = "false"
+local audio_lang = nil
 
 local log_file_path = mp.command_native({"expand-path", "~/Documents/watch-log.txt"})
 
@@ -18,6 +21,13 @@ local function log_to_file(line)
         mp.msg.error("Failed to open log file: " .. log_file_path)
     end
 end
+
+-- watch for audio track changes
+mp.observe_property("current-tracks/audio/lang", function(name, value)
+    if not value then return end
+
+    audio_lang = value
+end)
 
 -- Observe the "time-pos" property
 mp.observe_property("time-pos", "number", function(name, value)
@@ -38,6 +48,10 @@ function update_watch_time(value)
     this_time = value
 end
 
+mp.register_script_message("sub-skip-enabled", function(active)
+    sub_skip_enabled = active
+    mp.msg.info(string.format("handle sub-skip enable: %s", sub_skip_enabled))
+end)
 
 -- Listen for user-initiated seeks
 mp.register_event("seek", function()
@@ -47,6 +61,8 @@ end)
 -- save filename for after the file is unloaded
 mp.register_event("file-loaded", function()
     video_filename = mp.get_property("filename/no-ext")
+    total_time = mp.get_property("duration")
+    audio_lang = mp.get_property("current-tracks/audio/lang")
 end)
 
 -- log watch time
@@ -58,15 +74,18 @@ mp.register_event("end-file", function()
     local current_date = os.date("%Y-%m-%d")
     local current_time = os.date("%H:%M")
 
-    mp.msg.info(string.format("End watch time: %s, %s, %s: %.2f", current_date, current_time, video_filename, watch_time or 0))
+    mp.msg.info(string.format("End watch time: %s, %s, %s, %s, %s: %.2f, enabled: %s",
+        current_date, current_time, video_filename, audio_lang, total_time, watch_time or 0, sub_skip_enabled))
 
-    log_to_file(string.format("%s,%s,%s,%.2f", current_date, current_time, video_filename, watch_time or 0))
+    log_to_file(string.format("%s,%s,%s,%s,%.2f,%.2f,%s",
+        current_date, current_time, video_filename, audio_lang or "unknown", total_time or 0, watch_time or 0, sub_skip_enabled))
 
     -- cleanup for next video
     last_time = nil
     watch_time = nil
     this_time = nil
     video_filename = nil
+    total_time = nil
 end)
 
 function print_r ( t ) 
