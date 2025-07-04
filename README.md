@@ -60,6 +60,10 @@ git config --global core.editor "vim"
 
 # Install playerctl for audio pause/play
 sudo pacman -Syu playerctl
+
+# Install xorg conf for xppen pro 16 (gen2)
+# log in and out to apply
+sudo cp 99-calibration.conf /etc/X11/xorg.conf.d/99-calibration.conf
 ```
 
 ```

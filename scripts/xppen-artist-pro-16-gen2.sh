@@ -6,7 +6,7 @@
 # --------------------------------------
 # XP-Pen Artist Pro 16 (Gen2)
 # --------------------------------------
-xrandr --output HDMI-0 --auto --pos 0x0 --rotate left --output DP-0 --auto --pos 6000x0 --rotate right --output DP-2 --auto --pos 2160x433 --output DP-4 --auto --pos 2800x2593
+#xrandr --output HDMI-0 --auto --pos 0x0 --rotate left --output DP-0 --auto --pos 6000x0 --rotate right --output DP-2 --auto --pos 2160x433 --output DP-4 --auto --pos 2800x2593
 
 # Tablet definition
 # Identifier obtained using the 'xsetwacom --list' command line
@@ -20,7 +20,7 @@ tableteraser="UGTABLET Artist Pro 16 (Gen2) eraser"
 # Monitor name here (output) is "HDMI-A-0". It was obtained
 # using the 'xrandr' command-line. Your might
 # be different. 
-output="HEAD-3"
+output="HDMI-A-0"
 xsetwacom --set "$tabletstylus" MapToOutput $output
 xsetwacom --set "$tableteraser" MapToOutput $output
 
@@ -33,9 +33,10 @@ xsetwacom --set "$tabletstylus" ResetArea
 # Calibrate your device manually with `xinput_calibrator` after connecting only the Xpen-Pen pro-art
 # (Area is "MinX" "MinY" "MaxX" "MaxY"), then tweak manually adding or rmoving +50 here and there to obtain 
 # Something pleasing I found:
-xsetwacom set "$tabletstylus" Area 0 0 32767 32767
+#xsetwacom set "$tabletstylus" Area 0 0 32767 32767
+xsetwacom set "$tabletstylus" Area -100 -25 32639 32761
 # 125 45 32810 32792
-xsetwacom set "$tableteraser" Area 0 0 32767 32767
+xsetwacom set "$tableteraser" Area -100 -25 32639 32761
 
 # Pressure Curve:
 # a web GUI is available here to tweak it https://linuxwacom.github.io/bezier.html
